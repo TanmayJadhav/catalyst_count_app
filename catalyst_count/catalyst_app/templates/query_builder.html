@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query Builder</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Loader Styles */
+        #loader {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Blurring the background content */
+        #content {
+            transition: filter 0.3s;
+        }
+
+        /* Blurred state when loader is active */
+        .blurred {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        /* Overlay for disabling the page content */
+        #overlay {
+            position: fixed;
+            display: none;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8); /* White transparent background */
+            z-index: 9998;
+        }
+
+        /* Result Message Styles */
+        #result-message {
+            display: none;
+            background-color: #d4edda; /* Light green background */
+            color: #155724; /* Dark green text */
+            padding: 10px;
+            border: 1px solid #c3e6cb; /* Green border */
+            border-radius: 5px;
+        }
+
+        .logout-button {
+            position: absolute;
+            right: 30px;
+            top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader Spinner -->
+    <div id="overlay"></div>
+    <div id="loader">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+    <div id="content" class="container mt-5" style="position: relative;">
+        <a class=" btn btn-outline-primary logout-button" href="{% url 'account_logout' %}">Logout</a>
+        <h1 class="text-center mb-4">Query Builder</h1>
+
+        <form id="query-form" method="post">
+            {% csrf_token %}
+            <div class="mt-4">
+                <p id="result-message" class="text-center"></p>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="name">Name</label>
+                    <select id="name" class="form-control" name="name">
+                        <option value="" selected>-- Select Name --</option>
+                        <!-- {% for name in names %}
+                            <option value="{{ name }}">{{ name }}</option>
+                        {% endfor %} -->
+                    </select>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="domain">Domain</label>
+                    <select id="domain" class="form-control" name="domain">
+                        <option value="" selected>-- Select Domain --</option>
+                        <!-- {% for domain in domains %}
+                            <option value="{{ domain }}">{{ domain }}</option>
+                        {% endfor %} -->
+                    </select>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="year_founded">Year Founded</label>
+                    <select id="year_founded" class="form-control" name="year_founded">
+                        <option value="" selected>-- Select Year --</option>
+                        <!-- {% for year in years %}
+                            <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %} -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="industry">Industry</label>
+                    <select id="industry" class="form-control" name="industry">
+                        <option value="" selected>-- Select Industry --</option>
+                        <!-- {% for industry in industries %}
+                            <option value="{{ industry }}">{{ industry }}</option>
+                        {% endfor %} -->
+                    </select>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="size_range">Size Range</label>
+                    <select id="size_range" class="form-control" name="size_range">
+                        <option value="" selected>-- Select Size Range --</option>
+                        <!-- {% for size in sizes %}
+                            <option value="{{ size }}">{{ size }}</option>
+                        {% endfor %} -->
+                    </select>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="locality">Locality</label>
+                    <select id="locality" class="form-control" name="locality">
+                        <option value="" selected>-- Select Locality --</option>
+                        <!-- {% for locality in localities %}
+                            <option value="{{ locality }}">{{ locality }}</option>
+                        {% endfor %} -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="country">Country</label>
+                    <select id="country" class="form-control" name="country">
+                        <option value="" selected>-- Select Country --</option>
+                        <!-- {% for country in countries %}
+                            <option value="{{ country }}">{{ country }}</option>
+                        {% endfor %} -->
+                    </select>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="linkedin_url">Linkedin URL</label>
+                    <select id="linkedin_url" class="form-control" name="linkedin_url">
+                        <option value="" selected>-- Select URL --</option>
+                        <!-- {% for url in urls %}
+                            <option value="{{ url }}">{{ url }}</option>
+                        {% endfor %} -->
+                    </select>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label for="current_employee_estimate">Current Employee Estimate</label>
+                    <select id="current_employee_estimate" class="form-control" name="current_employee_estimate">
+                        <option value="" selected>-- Select Current Employee Estimate --</option>
+                        <!-- {% for employee_estimate in current_employee_estimate %}
+                            <option value="{{ employee_estimate }}">{{ employee_estimate }}</option>
+                        {% endfor %} -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="total_employee_estimate">Total Employee Estimate</label>
+                    <select id="total_employee_estimate" class="form-control" name="total_employee_estimate">
+                        <option value="" selected>-- Select Total Employee Estimate --</option>
+                        <!-- {% for employee_estimate in total_employee_estimate %}
+                            <option value="{{ employee_estimate }}">{{ employee_estimate }}</option>
+                        {% endfor %} -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button type="button" class="btn btn-primary" id="filter-btn">Submit</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+
+        
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        // Function to show loader and apply blur
+        function showLoader() {
+            $('#overlay').show(); // Show the overlay
+            $('#loader').show();  // Show the loader
+            $('#content').addClass('blurred'); // Blur the content
+        }
+
+        // Function to hide loader and remove blur
+        function hideLoader() {
+            $('#overlay').hide(); // Hide the overlay
+            $('#loader').hide();  // Hide the loader
+            $('#content').removeClass('blurred'); // Remove blur from content
+        }
+
+        $(document).ready(function() {
+            // Show loader when the page is first loaded
+            showLoader();
+
+            // Populate dropdowns when the page is first loaded
+            $.ajax({
+                url: "{% url 'get_dropdown_data' %}",
+                method: "GET",
+                success: function(response) {
+                    // Populate the dropdowns with the data from the server
+                    populateDropdowns(response);
+                    hideLoader(); // Hide the loader after dropdowns are populated
+                },
+                error: function() {
+                    hideLoader(); // Hide the loader if an error occurs
+                    alert("Error loading data");
+                }
+            });
+
+            // Function to populate dropdowns with server data
+            function populateDropdowns(data) {
+                const names = data.names || [];
+                const domains = data.domains || [];
+                const years = data.years || [];
+                const industries = data.industries || [];
+                const sizes = data.sizes || [];
+                const localities = data.localities || [];
+                const countries = data.countries || [];
+                const urls = data.urls || [];
+                const currentEmployeeEstimate = data.current_employee_estimate || [];
+                const totalEmployeeEstimate = data.total_employee_estimate || [];
+
+                // Populate the name dropdown
+                names.forEach(name => {
+                    $('#name').append(`<option value="${name}">${name}</option>`);
+                });
+
+                // Populate the domain dropdown
+                domains.forEach(domain => {
+                    $('#domain').append(`<option value="${domain}">${domain}</option>`);
+                });
+
+                // Populate the year dropdown
+                years.forEach(year => {
+                    $('#year_founded').append(`<option value="${year}">${year}</option>`);
+                });
+
+                // Populate the industry dropdown
+                industries.forEach(industry => {
+                    $('#industry').append(`<option value="${industry}">${industry}</option>`);
+                });
+
+                // Populate the size range dropdown
+                sizes.forEach(size => {
+                    $('#size_range').append(`<option value="${size}">${size}</option>`);
+                });
+
+                // Populate the locality dropdown
+                localities.forEach(locality => {
+                    $('#locality').append(`<option value="${locality}">${locality}</option>`);
+                });
+
+                // Populate the country dropdown
+                countries.forEach(country => {
+                    $('#country').append(`<option value="${country}">${country}</option>`);
+                });
+
+                // Populate the linkedin URL dropdown
+                urls.forEach(url => {
+                    $('#linkedin_url').append(`<option value="${url}">${url}</option>`);
+                });
+
+                // Populate the current employee estimate dropdown
+                currentEmployeeEstimate.forEach(employee_estimate => {
+                    $('#current_employee_estimate').append(`<option value="${employee_estimate}">${employee_estimate}</option>`);
+                });
+
+                // Populate the total employee estimate dropdown
+                totalEmployeeEstimate.forEach(employee_estimate => {
+                    $('#total_employee_estimate').append(`<option value="${employee_estimate}">${employee_estimate}</option>`);
+                });
+            }
+
+            // When the user clicks the Submit button
+            $('#filter-btn').click(function() {
+                // Show loader before AJAX request
+                showLoader();
+
+                // Collect the selected values
+                var formData = {
+                    'name': $('#name').val(),
+                    'domain': $('#domain').val(),
+                    'year_founded': $('#year_founded').val(),
+                    'industry': $('#industry').val(),
+                    'size_range': $('#size_range').val(),
+                    'locality': $('#locality').val(),
+                    'country': $('#country').val(),
+                    'linkedin_url': $('#linkedin_url').val(),
+                    'current_employee_estimate': $('#current_employee_estimate').val(),
+                    'total_employee_estimate': $('#total_employee_estimate').val(),
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                };
+
+                // Send the data to the backend using AJAX
+                $.ajax({
+                    url: "{% url 'get_filtered_record_count' %}",
+                    method: "POST",
+                    data: formData,
+                    success: function(response) {
+                        // Display the result in the result-message div
+                        $('#result-message').text("Total matching records: " + response.record_count);
+                        $('#result-message').show(); // Show the result message
+                        hideLoader(); // Hide the loader
+                    },
+                    error: function() {
+                        $('#result-message').text("An error occurred while processing the request.");
+                        $('#result-message').show(); // Show the error message
+                        hideLoader(); // Hide the loader
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
