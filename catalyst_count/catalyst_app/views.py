@@ -89,7 +89,7 @@ def upload_file(request):
             # csv_data = uploaded_file.read().decode('utf-8').splitlines()
             
             # Call the Celery task asynchronously
-            # process_csv_file.delay(file_path)
+            process_csv_file.delay(file_path)
 
             return JsonResponse({
                 'status': 'success',
